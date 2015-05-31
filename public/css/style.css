@@ -1,0 +1,45 @@
+/* Remove stuff */
+.msgb,
+.gb_Lc,
+.gb_fb,
+.gb_Sc
+{
+    display: none!important;
+}
+
+/* Loader */
+.cmsg
+{
+    margin-top: 150px!important;
+}
+
+.cmsg .msg
+{
+    display: none;
+}
+
+.cmsg .lpb
+{
+    /* Change loader */
+}
+
+.cmsg .lpb .lpt
+{
+    display: none;
+}
+
+.gb_fa
+{
+    display: none;
+}
+
+.gb_Ob
+{
+    width: 100%!important;
+    left: 20px!important;
+}
+
+.nH.oy8Mbf.qp
+{
+    background-color: blue!important;
+}

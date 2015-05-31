@@ -7,11 +7,10 @@
 //
 
 #import <Cocoa/Cocoa.h>
-#import "Classes/ContentView.h"
 
-#import "WindowController.h"
+@class WindowController;
 
-@interface AppDelegate : NSObject <NSApplicationDelegate>
+@interface AppDelegate : NSObject <NSApplicationDelegate,NSUserNotificationCenterDelegate>
 
 @property (retain, nonatomic) WindowController *windowController;
 

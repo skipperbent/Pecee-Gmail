@@ -1,0 +1,19 @@
+{
+    "startUrl": "https://www.gmail.com",
+    "main": "https://www.gmail.com",
+    "name": "Pecee Gmail",
+    "description": "",
+    "version": "1.0",
+    "js": ["js/jquery-1.11.3.min.js", "js/main.js"],
+    "css": ["css/style.css"],
+    "window" : {
+        "title" : "MacGap",
+        "width" : 900,
+        "height" : 600,
+        "position": "center",
+        "min_width": 400,
+        "min_height": 200,
+        "opaque": 1,
+        "alpha": 1
+    }
+}

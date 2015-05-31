@@ -39,7 +39,10 @@
 
 - (void) webView:(WebView*)webView didClearWindowObject:(WebScriptObject*)windowScriptObject forFrame:(WebFrame *)frame
 {
-    JSContextRef context = [frame globalContext];
+    //JSContextRef context = [frame globalContext];
+    
+    JSContextRef context = self.requestedWindow.jsContext;
+    
     if (self.sound == nil) { self.sound = [[Sound alloc] initWithContext:context]; }
 	if (self.dock == nil) { self.dock = [Dock new]; }
 	if (self.growl == nil) { self.growl = [Growl new]; }
@@ -50,9 +53,12 @@
     if (self.notice == nil && [Notice available] == YES) {
        self.notice = [[Notice alloc] initWithWebView:webView];
     }
+    
+    BOOL insertJs = false;
 	
     if (self.app == nil) { 
-        self.app = [[App alloc] initWithWebView:webView]; 
+        self.app = [[App alloc] initWithWebView:webView];
+        insertJs = true;
     }
     
     if (self.window == nil) { 
@@ -68,6 +74,47 @@
     }
     
     [windowScriptObject setValue:self forKey:kWebScriptNamespace];
+    
+    // Insert custom javascript/css
+    if (insertJs) {
+        app = [[App alloc] initWithWebView:webView];
+        
+        // Loop through each javascript defined in config.json
+        
+        NSDictionary* jsFiles = [self.requestedWindow.settings objectForKey:@"js"];
+        if(jsFiles != nil) {
+            for (NSMutableString *jsPath in jsFiles) {
+                NSString *jsFile = [NSString stringWithFormat:@"public/%@", jsPath];
+                
+                NSString *jsFilePath = [[NSBundle mainBundle] pathForResource:jsFile ofType:nil];
+                NSURL *jsURL = [NSURL fileURLWithPath:jsFilePath];
+                NSString *javascriptCode = [NSString stringWithContentsOfFile:jsURL.path encoding:NSUTF8StringEncoding error:nil];
+                [webView stringByEvaluatingJavaScriptFromString:javascriptCode];
+            }
+        }
+        
+        
+        // Loop through each stylesheet defined in config.json
+        
+        NSDictionary* cssFiles = [self.requestedWindow.settings objectForKey:@"css"];
+        if(cssFiles != nil) {
+            for (NSMutableString *cssPath in cssFiles) {
+                NSString *cssFile = [NSString stringWithFormat:@"public/%@", cssPath];
+                NSString *cssFilePath = [[NSBundle mainBundle] pathForResource:cssFile ofType:nil];
+                NSURL *cssURL = [NSURL fileURLWithPath:cssFilePath];
+                
+                NSString *css = [NSString stringWithContentsOfFile:cssURL.path encoding:NSUTF8StringEncoding error:nil];
+                css = [css stringByReplacingOccurrencesOfString:@"\n" withString:@" "]; // js dom inject doesn't accept line breaks, so remove them
+                
+                NSString *js = [NSString stringWithFormat:@"var styleNode = document.createElement('style');"
+                                "styleNode.type = 'text/css';"
+                                "styleNode.innerHTML = ' %@ ';", css];
+                js = [NSString stringWithFormat:@"%@document.getElementsByTagName('head')[0].appendChild(styleNode);", js];
+                
+                [webView stringByEvaluatingJavaScriptFromString:js];
+            }
+        }
+    }
 }
 
 
@@ -179,7 +226,7 @@
 
 - (WebView *)webView:(WebView *)sender createWebViewWithRequest:(NSURLRequest *)request{
     requestedWindow = [[WindowController alloc] initWithRequest:request];
-    return requestedWindow.contentView.webView;    
+    return requestedWindow.webView;
 }
 
 - (void)webViewShow:(WebView *)sender{
